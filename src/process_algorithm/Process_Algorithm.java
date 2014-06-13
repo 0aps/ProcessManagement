@@ -68,18 +68,20 @@ public class Process_Algorithm {
         
         System.out.println("\nSalida de Gant para la planificacion: ");
         
+        String format;
         for(int i = 0; i < numProc; i++)
         {
             System.out.print(String.format("|%s", new_procesos[i].nombre));
-            for(int j = 0; j <= new_procesos[i].tDuracion; j++)
+            format = String.format("%d", new_procesos[i].tDuracion);
+            for(int j = 0; j < new_procesos[i].tDuracion+format.length(); j++)
                     System.out.print(" ");
         }
         System.out.print("\n");
         for(int i = 0, j = 0; i < numProc; i++)
         {
-            System.out.print(j);
-            for(; j < new_procesos[i].tDuracion; j++)
-                    System.out.print("  ");
+            System.out.print(String.format("%d  ", new_procesos[i].tEspera));
+            for(j = 0; j <= new_procesos[i].tDuracion; j++)
+                    System.out.print(" ");
         }
         
         tiempo_espera /= numProc;

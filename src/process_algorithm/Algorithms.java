@@ -51,8 +51,108 @@ public class Algorithms {
             public Proceso[] method(Proceso[] procesos)
             {
                 //in the meanwhile
+                Proceso tmp_proc, tmp_proc2;
+                ArrayList<Proceso> listo = new ArrayList<>();
+                ArrayDeque<Proceso> standby = new ArrayDeque<>();
+                ArrayDeque<Proceso> ready = new ArrayDeque<>();
+                int execution = 0, timeLimit = 0, interruption = 1;
                 
-                return procesos;
+                Proceso.flag = true;
+                Arrays.sort(procesos);
+                
+                for(int i = 0; i < procesos.length; i++)
+                {
+                    standby.add(procesos[i]);
+                    timeLimit += procesos[i].rafaga;
+                }
+                
+                while( execution < timeLimit )
+                {
+                    //aun quedan procesos por llegar?
+                    if ( !standby.isEmpty()  && execution >= standby.getLast().prioridad )
+                    {
+                        while( !standby.isEmpty() )
+                        {
+                            ready.add(standby.getFirst());
+                            standby.pop();
+                        }
+                        
+                    }
+                    
+                    if(interruption != 0 && !standby.isEmpty())
+                    {
+                        tmp_proc = new Proceso(standby.getFirst());
+                        standby.pop();
+                    }
+                    else
+                    {  
+                        tmp_proc = getMin(ready.clone());
+                        ready.remove(tmp_proc);
+                    }
+                    
+                    //si ya no quedan en standby
+                    if( standby.isEmpty() )
+                    {
+                        listo.add(tmp_proc);
+                         execution += tmp_proc.rafaga;
+                    }
+                    else
+                    {
+                           tmp_proc2 = standby.getFirst();
+                           //si llegaron al mismo time
+                           if( tmp_proc.prioridad ==  tmp_proc2.prioridad)
+                           {
+                               Proceso first_found;
+                               ArrayDeque<Proceso> meh = standby.clone();
+                               meh.pop();
+                               
+                               while(!meh.isEmpty())
+                               {
+                                   first_found = meh.getFirst();
+                                   if(first_found.prioridad > tmp_proc2.prioridad )
+                                   {
+                                       tmp_proc2 = first_found;
+                                       break;
+                                   }
+                                   
+                                   standby.remove(first_found);
+                                   meh.pop();
+                               }
+                               
+                           }
+                           
+                           
+                        //si p1 se puede ejecutar
+                        if(execution+tmp_proc.rafaga <= tmp_proc2.prioridad)
+                        {
+                            listo.add(tmp_proc);
+                            
+                            execution += tmp_proc.rafaga;
+                            interruption = 0; 
+                        }
+                        else
+                        {
+                            Proceso p_ready = new Proceso(tmp_proc);
+                            p_ready.rafaga = tmp_proc2.prioridad-execution;
+                            listo.add(p_ready);
+                            
+                            tmp_proc.rafaga -= p_ready.rafaga;
+                            ready.add(tmp_proc);
+                            
+                            execution += p_ready.rafaga;
+                            interruption = 1;
+                        }
+                    }
+                   
+                        
+                }
+                
+                Proceso[] new_procesos = new Proceso[listo.size()];
+                
+                for(int i = 0; i < listo.size(); i++)
+                    new_procesos[i] = listo.get(i);
+                
+                return new_procesos;
             }
         });
         
@@ -125,5 +225,22 @@ public class Algorithms {
     public String nombre()
     {
         return algo_selected;
+    }
+    
+    public Proceso getMin(ArrayDeque<Proceso> queue)
+    {
+        Proceso menor = queue.getFirst();
+        queue.pop();
+        
+        while( !queue.isEmpty() )
+        {
+            if(queue.getFirst().rafaga < menor.rafaga)
+                    menor = queue.getFirst();
+           
+          queue.pop();  
+        }
+        
+        return menor;
+        
     }
 }
